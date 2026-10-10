@@ -37,9 +37,9 @@ export default function Hero() {
         <span className="cf cf5" aria-hidden="true" />
         <span className="cf cf6" aria-hidden="true" />
         <h1 id="hero-title" className="serif h1 rise">
-          Leave 15 minutes with{' '}
+          Everything you need, you{' '}
           <span className="al">
-            one clear next step
+            already
             <svg
               viewBox="0 0 200 16"
               preserveAspectRatio="none"
@@ -47,13 +47,12 @@ export default function Hero() {
             >
               <path d="M3 10 C 40 2, 80 14, 130 6 S 190 8, 197 4" />
             </svg>
-          </span>
-          .
+          </span>{' '}
+          have.
         </h1>
         <p className="lede rise d2">
-          Tell me what is on your plate: parenting, work, your business or all
-          three. We pick the one change that matters most, and I give you my
-          honest read on whether coaching can help. It is free.
+          Life coaching for parents, busy professionals and business owners.
+          Start with a free 15-minute call with me.
         </p>
         <a className="seelink rise d3" href="#coaching">
           See how I coach
