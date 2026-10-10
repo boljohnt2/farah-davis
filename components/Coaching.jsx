@@ -13,7 +13,7 @@ export default function Coaching() {
         </div>
       </div>
       <div className="panels">
-        <article className="panel p1">
+        <article className="panel p1 reveal" style={{ '--d': 0 }}>
           <img
             className="pfull"
             src="/assets/c5448cd4aed04f6d79793e975fb2a867.jpg"
@@ -31,7 +31,7 @@ export default function Coaching() {
             </p>
           </div>
         </article>
-        <article className="panel p2">
+        <article className="panel p2 reveal" style={{ '--d': 1 }}>
           <img
             className="pfull"
             src="/assets/83f959416ea63f46848636f85d30f878.jpg"
@@ -49,7 +49,7 @@ export default function Coaching() {
             </p>
           </div>
         </article>
-        <article className="panel p3">
+        <article className="panel p3 reveal" style={{ '--d': 2 }}>
           <img
             className="pfull"
             src="/assets/f242224529b21d0cf23e6fb98c975a66.jpg"

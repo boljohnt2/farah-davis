@@ -41,7 +41,7 @@ export default function Kitchen() {
           </h2>
           <p className="body">Short clips from my cooking show. Tap one to watch.</p>
         </div>
-        <div className="arrows">
+        <div className="arrows reveal" style={{ '--d': 1 }}>
           <button
             className="btn arrowbtn"
             type="button"

@@ -8,7 +8,7 @@ export default function Proof() {
           </h2>
         </div>
         <div>
-          <figure className="tq reveal">
+          <figure className="tq reveal" style={{ '--d': 0 }}>
             <span className="qm" aria-hidden="true">
               "
             </span>
@@ -23,7 +23,7 @@ export default function Proof() {
               <span>Parent of two</span>
             </figcaption>
           </figure>
-          <figure className="tq reveal">
+          <figure className="tq reveal" style={{ '--d': 1 }}>
             <span className="qm" aria-hidden="true">
               "
             </span>
@@ -38,7 +38,7 @@ export default function Proof() {
               <span>Marketing director</span>
             </figcaption>
           </figure>
-          <figure className="tq reveal">
+          <figure className="tq reveal" style={{ '--d': 2 }}>
             <span className="qm" aria-hidden="true">
               "
             </span>

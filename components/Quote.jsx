@@ -6,7 +6,7 @@ export default function Quote() {
           I want to see you <b>win</b> more than I want to win because that's a
           win for us both.
         </p>
-        <p className="by">Farah Nicole, founder of Pivot and Pop PR</p>
+        <p className="by reveal" style={{ '--d': 1 }}>Farah Nicole, founder of Pivot and Pop PR</p>
       </div>
     </section>
   );

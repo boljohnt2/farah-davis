@@ -10,16 +10,16 @@ export default function About() {
             />
             <figcaption className="serif">Chef, author, coach</figcaption>
           </figure>
-          <div className="copy reveal">
-            <h2 id="about-title" className="serif h2">
+          <div className="copy">
+            <h2 id="about-title" className="serif h2 reveal" style={{ '--d': 0 }}>
               All those careers were the training.
             </h2>
-            <p className="body">
+            <p className="body reveal" style={{ '--d': 1 }}>
               I am an author, a classically trained chef, an event PR
               professional and a business coach. For years people called me a
               jill of all trades, and I started to believe them.
             </p>
-            <p className="body">
+            <p className="body reveal" style={{ '--d': 2 }}>
               Then I spent six months on St. Croix, watching the waves, and saw
               it differently. Every venture was a notch in my belt and part of
               the credibility I now bring to yours.

@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="wrap">
         <div className="foot">
-          <div>
+          <div className="reveal" style={{ '--d': 0 }}>
             <a className="serif fbrand" href="#top">
               Farah Nicole
             </a>
@@ -11,7 +11,7 @@ export default function Footer() {
               Life coach, chef, author and founder of Pivot and Pop PR.
             </p>
           </div>
-          <div>
+          <div className="reveal" style={{ '--d': 1 }}>
             <h3>Explore</h3>
             <ul>
               <li>
@@ -25,7 +25,7 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-          <div>
+          <div className="reveal" style={{ '--d': 2 }}>
             <h3>Elsewhere</h3>
             <ul>
               <li>
@@ -84,7 +84,7 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-          <div>
+          <div className="reveal" style={{ '--d': 3 }}>
             <h3>Say hello</h3>
             <ul>
               <li>farahnicole@pivotandpoppr.com</li>

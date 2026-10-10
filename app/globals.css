@@ -106,7 +106,7 @@ body { margin: 0; background: #fff9f4; }
   .badge .ring { animation: spin 22s linear infinite; }
   .rplay, .play { animation: pulse 2.6s ease-in-out infinite; }
   @supports (animation-timeline: view()) {
-    .reveal { animation: reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 50%; }
+    .reveal { animation: reveal linear both; animation-timeline: view(); animation-range: entry calc(var(--d, 0) * 10%) entry calc(50% + var(--d, 0) * 10%); }
   }
   .cf { animation: floaty 7s ease-in-out infinite; }
   .cf2, .cf4 { animation-duration: 9s; animation-direction: reverse; }
