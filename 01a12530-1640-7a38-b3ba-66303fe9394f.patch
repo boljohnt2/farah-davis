@@ -1,0 +1,2340 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..5622a24
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,6 @@
++node_modules/
++.next/
++out/
++.vercel/
++*.tsbuildinfo
++.DS_Store
+diff --git a/Homepage-html.zip b/Homepage-html.zip
+new file mode 100644
+index 0000000..eb3d21b
+Binary files /dev/null and b/Homepage-html.zip differ
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..2738abc
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,71 @@
++# farahnicole.com
++
++Farah Nicole's personal site: life coaching for parents, busy professionals and
++business owners, plus the cooking show, the podcast and Pivot & Pop PR.
++
++Built as a pixel-faithful Next.js implementation of the design mockup in
++`Homepage-html.zip` (`Main.dc.html`). Every color, size, spacing value, radius,
++animation and line of copy in `app/globals.css` and `components/` comes straight
++from the mockup; the only change is that font families load through `next/font`
++(self-hosted, same faces: Bodoni Moda + Outfit).
++
++## Run locally
++
++```bash
++npm install
++npm run dev      # http://localhost:3000
++npm run build && npm start
++```
++
++## Deploy on Vercel
++
++The repo is a standard Next.js app at the root, so Vercel detects it with zero
++configuration. The production branch is `main`; Vercel builds it automatically
++on every push. `npm run build` is the build command.
++
++Two project settings to check in the Vercel dashboard:
++
++1. **Deployment Protection** (Settings → Deployment Protection). If Vercel
++   Authentication is on, every visitor hits a "Protected Deployment" login
++   wall. For a public site, set it to Disabled (or "Only protect preview
++   deployments").
++2. **Domains** (Settings → Domains). Use the exact domain Vercel lists there.
++   The bare `farah-davis.vercel.app` name is not attached to this project; the
++   team-scoped domain works. Add a custom domain (e.g. farahnicole.com) here
++   when ready.
++
++Optional environment variables (all have sensible defaults baked in):
++
++| Variable | Purpose | Default |
++|---|---|---|
++| `NEXT_PUBLIC_SITE_URL` | Canonical URL for Open Graph metadata | `http://localhost:3000` |
++| `NEXT_PUBLIC_BOOKING_URL` | Target of every "Book my free 15 min" CTA | `https://www.pivotandpoppr.com/let-s-pop` |
++| `NEXT_PUBLIC_INTRO_VIDEO_URL` | Hero intro video (mp4/webm in `public/` or any URL) | empty |
++| `NEXT_PUBLIC_INTRO_VIDEO_RATIO` | Hero video frame on mobile: `4 / 5`, `16 / 9`, `9 / 16` | `4 / 5` |
++
++## Swapping in real media
++
++- **Hero intro video:** set `NEXT_PUBLIC_INTRO_VIDEO_URL` (e.g. `/assets/farah-intro.mp4`
++  after dropping the file in `public/assets/`). While it is empty, the hero shows
++  the poster frame with a play button, exactly as the mockup's placeholder state.
++- **Cooking clips:** each clip in `lib/site.js` (`cookingClips`) has a `video`
++  field. Fill it in and the reel's play button swaps the poster for the playing
++  video. Posters are placeholders until then.
++- **Testimonials:** the three quotes use `[Client name]` placeholders on purpose.
++  Drop in real names and roles when Farah approves them.
++
++## Structure
++
++```
++app/
++  layout.jsx      # fonts (next/font/local), metadata
++  page.jsx        # page composition
++  globals.css     # the mockup stylesheet, values kept verbatim
++  fonts/          # Bodoni Moda + Outfit woff2 (self-hosted)
++components/       # Hero, Ticker, Coaching, About, Quote, Proof, BookCta,
++                  # More, Kitchen (client), Footer
++lib/site.js       # booking URL, hero video config, cooking clip list
++public/assets/    # images from the design
++```
++
++`Homepage-html.zip` is the design reference and stays in the repo untouched.
+diff --git a/app/fonts/bodoni-moda-latin-opsz-italic.woff2 b/app/fonts/bodoni-moda-latin-opsz-italic.woff2
+new file mode 100644
+index 0000000..3c7c2ec
+Binary files /dev/null and b/app/fonts/bodoni-moda-latin-opsz-italic.woff2 differ
+diff --git a/app/fonts/bodoni-moda-latin-opsz-normal.woff2 b/app/fonts/bodoni-moda-latin-opsz-normal.woff2
+new file mode 100644
+index 0000000..7905afa
+Binary files /dev/null and b/app/fonts/bodoni-moda-latin-opsz-normal.woff2 differ
+diff --git a/app/fonts/outfit-latin-wght-normal.woff2 b/app/fonts/outfit-latin-wght-normal.woff2
+new file mode 100644
+index 0000000..85e3332
+Binary files /dev/null and b/app/fonts/outfit-latin-wght-normal.woff2 differ
+diff --git a/app/globals.css b/app/globals.css
+new file mode 100644
+index 0000000..286ec35
+--- /dev/null
++++ b/app/globals.css
+@@ -0,0 +1,245 @@
++/* Design reference: Homepage-html.zip (Main.dc.html) — values kept verbatim for a pixel-faithful build. */
++body { margin: 0; background: #fff9f4; }
++
++/* Concept: the cover story. A glossy magazine for one woman. Giant Bodoni italics, a hero photo cut
++   like a window, color that arrives in full-bleed blocks, one rotating CTA badge and a confetti of
++   small shapes. No outlines, no shadows. Shapes are circles, arches and straight edges. */
++.fn {
++  --cobalt: #0047ab;
++  --royal: #4169e1;
++  --pink: #ff6fb8;
++  --blush: #ffe6ef;
++  --warm: #fff9f4;
++  --ink: #0b1030;
++  --focus: #ff6fb8;
++  --gutter: max(40px, calc((100vw - 1200px) / 2 + 40px));
++  --s-section: clamp(88px, 11vw, 144px);
++  --s-head: clamp(40px, 5vw, 72px);
++  font-family: var(--font-outfit), 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
++  font-weight: 400;
++  color: var(--ink);
++  background: var(--warm);
++  overflow-x: hidden;
++  -webkit-font-smoothing: antialiased;
++}
++.fn *, .fn *::before, .fn *::after { box-sizing: border-box; }
++:where(.fn) a { color: inherit; text-decoration: none; }
++:where(.fn) :is(h1, h2, h3, p, ul, figure, blockquote) { margin: 0; padding: 0; }
++:where(.fn) ul { list-style: none; }
++.fn img { display: block; }
++.fn :focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; border-radius: 8px; }
++.light { --focus: #0047ab; }
++.final { --focus: #0b1030; }
++
++.wrap { max-width: 1200px; margin: 0 auto; padding-inline: 40px; position: relative; }
++
++/* Type */
++.serif { font-family: var(--font-bodoni), 'Bodoni Moda', 'Playfair Display', Georgia, serif; font-style: italic; font-weight: 800; letter-spacing: -0.02em; }
++.body { font-size: 20px; line-height: 1.6; }
++.h2 { font-size: clamp(40px, 5.6vw, 84px); line-height: 0.98; text-wrap: balance; }
++
++/* Buttons: flat color, no outline or shadow */
++.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 13px 28px; white-space: nowrap; cursor: pointer; font-family: var(--font-outfit), 'Outfit', system-ui, sans-serif; font-weight: 600; font-size: 17px; line-height: 1.2; border-radius: 999px; border: 2px solid var(--warm); background: transparent; transition: background-color 0.25s, color 0.25s, border-color 0.25s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
++.fn a.btn { color: var(--warm); }
++.fn a.btn:hover { background: var(--pink); border-color: var(--pink); color: var(--ink); transform: translateY(-2px); }
++.fn a.btn-solid { background: var(--ink); border-color: var(--ink); color: var(--warm); font-size: 20px; padding: 18px 38px; min-height: 60px; }
++.fn a.btn-solid:hover { background: var(--warm); border-color: var(--warm); color: var(--ink); }
++.btn:active { transform: translateY(1px) scale(0.98); }
++.fn .arrowbtn { width: 60px; padding: 0; font-size: 24px; background: transparent; border-color: var(--warm); color: var(--warm); cursor: pointer; }
++.fn .arrowbtn:hover { background: var(--pink); border-color: var(--pink); color: var(--ink); }
++
++/* Hero */
++.hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); min-height: 800px; background: var(--cobalt); color: var(--warm); overflow: hidden; }
++.skip { position: absolute; left: 16px; top: -70px; z-index: 20; background: var(--pink); color: var(--ink); border-radius: 12px; padding: 10px 16px; font-weight: 600; }
++.skip:focus { top: 12px; }
++.nav { position: absolute; z-index: 6; top: 0; left: 0; right: 0; height: 88px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-inline: var(--gutter); }
++.brand { font-size: 32px; line-height: 1; }
++.navright { display: flex; align-items: center; gap: 36px; }
++.links { display: flex; gap: 30px; font-size: 16px; font-weight: 500; letter-spacing: 0.02em; }
++.links a { padding-block: 8px; border-bottom: 2px solid transparent; transition: border-color 0.2s; }
++.links a:hover { border-color: var(--pink); }
++.htext { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; gap: 36px; padding: 160px 90px 112px var(--gutter); }
++.h1 { font-size: clamp(48px, 6.6vw, 94px); line-height: 0.95; text-wrap: balance; }
++.al { position: relative; color: var(--pink); white-space: nowrap; }
++.al svg { position: absolute; left: 0; bottom: -0.14em; width: 100%; height: 0.24em; fill: none; stroke: var(--warm); stroke-width: 4; stroke-linecap: round; overflow: visible; }
++.lede { max-width: 25em; font-size: 22px; line-height: 1.5; font-weight: 300; }
++.seelink { align-self: flex-start; font-weight: 600; font-size: 18px; padding-bottom: 4px; border-bottom: 3px solid var(--pink); transition: color 0.2s; }
++.fn a.seelink:hover { color: var(--pink); }
++.hphoto { position: relative; margin-top: 88px; border-radius: 300px 0 0 0; overflow: hidden; background: var(--royal); }
++.hphoto img, .hphoto video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
++.play { position: absolute; right: 44px; bottom: 44px; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--warm); border: 0; border-radius: 50%; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
++.play:hover { transform: scale(1.08); }
++.tri { width: 0; height: 0; margin-left: 8px; border-left: 24px solid var(--cobalt); border-top: 15px solid transparent; border-bottom: 15px solid transparent; }
++.badge { position: absolute; z-index: 5; left: calc(54% - 100px); bottom: 84px; width: 200px; height: 200px; display: block; border-radius: 50%; background: var(--pink); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
++.badge:hover { transform: scale(1.07) rotate(-6deg); }
++.badge .ring { position: absolute; inset: 0; width: 100%; height: 100%; }
++.badge .ring text { font-family: var(--font-outfit), 'Outfit', system-ui, sans-serif; font-weight: 700; font-size: 13.5px; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--ink); }
++.badge .core { position: absolute; left: 50%; top: 50%; width: 62px; height: 62px; margin: -31px 0 0 -31px; border-radius: 50%; background: var(--ink); color: var(--warm); display: flex; align-items: center; justify-content: center; font-size: 30px; line-height: 1; }
++.cf { position: absolute; pointer-events: none; z-index: 0; }
++.cf1 { width: 22px; height: 22px; border-radius: 50%; background: var(--pink); top: 17%; left: 46%; }
++.cf2 { width: 40px; height: 40px; border-radius: 50%; border: 4px solid var(--warm); top: 11%; right: 18%; }
++.cf3 { width: 14px; height: 46px; border-radius: 8px; background: var(--royal); top: 78%; left: 10%; transform: rotate(32deg); }
++.cf4 { width: 10px; height: 38px; border-radius: 8px; background: var(--pink); top: 70%; right: 22%; transform: rotate(-24deg); }
++.cf5 { width: 14px; height: 14px; border-radius: 50%; background: var(--warm); top: 40%; right: 8%; }
++.cf6 { width: 56px; height: 56px; border-radius: 50%; background: var(--royal); bottom: 6%; left: 40%; }
++@media (max-width: 960px) {
++  .hero { grid-template-columns: minmax(0, 1fr); min-height: 0; }
++  .links { display: none; }
++  .navright { gap: 0; }
++  .nav { height: 76px; padding-inline: 20px; }
++  .htext { padding: 120px 20px 64px; }
++  .hphoto { margin-top: 0; border-radius: 180px 180px 0 0; aspect-ratio: var(--vr, 4 / 5); }
++  .badge { position: relative; left: auto; bottom: auto; justify-self: start; margin: 0 0 -100px 24px; width: 160px; height: 160px; }
++  .play { right: 24px; bottom: 24px; }
++}
++@media (max-width: 420px) { .brand { font-size: 25px; } .nav .btn { padding-inline: 16px; font-size: 15px; } }
++@media (prefers-reduced-motion: no-preference) {
++  .rise { animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
++  .rise.d2 { animation-delay: 0.1s; }
++  .rise.d3 { animation-delay: 0.2s; }
++  .rise.d4 { animation-delay: 0.3s; }
++  .al svg path { stroke-dasharray: 210; animation: draw 1.1s 0.7s ease-out both; }
++  .nav { animation: fadedown 0.9s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both; }
++  .hphoto { animation: photoin 1.4s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both; }
++  .hphoto img, .hphoto video { animation: zoomout 2s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both; }
++  .badge { animation: pop 1s 0.9s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
++  .badge .ring { animation: spin 22s linear infinite; }
++  .rplay, .play { animation: pulse 2.6s ease-in-out infinite; }
++  @supports (animation-timeline: view()) {
++    .reveal { animation: reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 50%; }
++  }
++  .cf { animation: floaty 7s ease-in-out infinite; }
++  .cf2, .cf4 { animation-duration: 9s; animation-direction: reverse; }
++}
++@keyframes rise { from { opacity: 0; transform: translateY(36px); } to { opacity: 1; transform: translateY(0); } }
++@keyframes fadedown { from { opacity: 0; translate: 0 -16px; } to { opacity: 1; translate: 0 0; } }
++@keyframes photoin { from { opacity: 0; clip-path: inset(0 0 0 45%); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
++@keyframes zoomout { from { scale: 1.18; } to { scale: 1; } }
++@keyframes pop { from { scale: 0; rotate: -120deg; } to { scale: 1; rotate: 0deg; } }
++@keyframes reveal { from { opacity: 0; translate: 0 64px; } to { opacity: 1; translate: 0 0; } }
++@keyframes pulse { 0%, 100% { scale: 1; } 50% { scale: 1.06; } }
++@keyframes draw { from { stroke-dashoffset: 210; } to { stroke-dashoffset: 0; } }
++@keyframes spin { to { transform: rotate(360deg); } }
++@keyframes floaty { 0%, 100% { translate: 0 0; } 50% { translate: 0 -16px; } }
++
++/* Ticker */
++.tick { background: var(--pink); color: var(--ink); overflow: hidden; padding-block: 22px; }
++.tick-track { display: flex; width: max-content; }
++.tick-set { display: flex; align-items: center; gap: 40px; padding-right: 40px; font-size: 34px; line-height: 1.2; white-space: nowrap; }
++.tick-set svg { width: 24px; height: 24px; flex: none; fill: var(--cobalt); }
++@media (prefers-reduced-motion: no-preference) { .tick-track { animation: tick 38s linear infinite; } }
++@keyframes tick { to { transform: translateX(-50%); } }
++@media (max-width: 560px) { .tick-set { font-size: 26px; gap: 28px; padding-right: 28px; } .tick-set svg { width: 18px; height: 18px; } }
++
++/* Coaching */
++.sec { padding-block: var(--s-section); }
++.sechead { display: flex; flex-direction: column; gap: 24px; max-width: 780px; }
++.sechead .h2 { color: var(--ink); }
++.panels { display: flex; min-height: 660px; }
++.panel { position: relative; flex: 1 1 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 56px 40px 64px; transition: flex-grow 0.9s cubic-bezier(0.65, 0, 0.35, 1), color 0.5s ease 0.2s; }
++.panels:hover .panel { flex-grow: 0.9; }
++.panels .panel:hover { flex-grow: 1.5; }
++.pin { width: 320px; max-width: 100%; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1; }
++.panel h3 { font-size: clamp(40px, 4.2vw, 62px); line-height: 0.98; }
++.p1 { background: var(--pink); color: var(--ink); --ox: 40%; --oy: 28%; }
++.p2 { background: var(--cobalt); color: var(--warm); --ox: 40%; --oy: 22%; }
++.p3 { background: var(--royal); color: var(--warm); --ox: 50%; --oy: 42%; }
++.p2 .ring { position: absolute; top: -90px; right: -90px; width: 320px; height: 320px; border-radius: 50%; border: 4px solid var(--pink); }
++.p3 .half { position: absolute; top: 0; right: 0; width: 240px; height: 120px; border-radius: 0 0 240px 240px; background: var(--warm); }
++.p3 .dot { position: absolute; top: 150px; left: 44px; width: 26px; height: 26px; border-radius: 50%; background: var(--pink); }
++.pfull { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: var(--ox) var(--oy); clip-path: circle(80px at var(--ox) var(--oy)); transition: clip-path 1.2s cubic-bezier(0.65, 0, 0.35, 1); will-change: clip-path; }
++.pring { position: absolute; z-index: 1; left: var(--ox); top: var(--oy); width: 196px; height: 196px; margin: -98px 0 0 -98px; border-radius: 50%; border: 3px solid var(--warm); pointer-events: none; transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.5s ease; }
++.pscrim { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; background: linear-gradient(to top, rgba(11, 16, 48, 0.9) 0%, rgba(11, 16, 48, 0.5) 42%, rgba(11, 16, 48, 0) 75%); transition: opacity 0.8s ease 0.2s; }
++.panel .pin { z-index: 2; }
++.panel:hover { color: var(--warm); }
++.panel:hover .pfull, .panel:focus-within .pfull { clip-path: circle(150% at var(--ox) var(--oy)); }
++.panel:hover .pscrim, .panel:focus-within .pscrim { opacity: 1; }
++.panel:hover .pring, .panel:focus-within .pring { transform: scale(2.6); opacity: 0; }
++@media (max-width: 1100px) { .panels { flex-direction: column; min-height: 0; } .panel { flex: none; min-height: 460px; transition: none; } .panels:hover .panel, .panels .panel:hover { flex-grow: 0; } .pin { width: 100%; max-width: 460px; } }
++@media (prefers-reduced-motion: reduce) { .panel, .pfull, .pring, .pscrim { transition: none; } }
++
++/* About */
++.about { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(56px, 7vw, 104px); align-items: center; }
++.aph { position: relative; padding-bottom: 20px; }
++.aph::before { content: ""; position: absolute; width: 76%; aspect-ratio: 1; border-radius: 50%; background: var(--pink); right: -10%; bottom: -4%; }
++.aph img { position: relative; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 25% 40%; border-radius: 999px 999px 0 0; }
++.aph figcaption { position: relative; margin-top: 22px; font-size: 34px; line-height: 1.1; color: var(--cobalt); }
++.copy { display: flex; flex-direction: column; gap: 28px; }
++.copy .h2 { font-size: clamp(38px, 4.6vw, 68px); }
++.quote { background: var(--royal); color: var(--warm); padding-block: var(--s-section); }
++.quote .big { font-size: clamp(38px, 6.2vw, 92px); line-height: 1.02; max-width: 15em; text-wrap: balance; }
++.quote .big b { font-weight: 800; text-decoration: underline; text-decoration-color: var(--pink); text-decoration-thickness: 0.09em; text-underline-offset: 0.12em; }
++.quote .by { margin-top: 48px; font-size: 18px; font-weight: 600; letter-spacing: 0.04em; }
++@media (max-width: 960px) { .about { grid-template-columns: minmax(0, 1fr); gap: 64px; } .aph { max-width: 460px; } }
++
++/* Testimonials */
++.proof { background: var(--blush); }
++.tq { display: flex; flex-direction: column; gap: 28px; max-width: 900px; padding-block: 56px 64px; border-top: 2px solid var(--ink); }
++.tq:nth-child(even) { margin-left: auto; }
++.qm { font-size: 150px; line-height: 0.6; height: 64px; color: var(--pink); font-weight: 700; }
++.tq p { font-family: var(--font-outfit), 'Outfit', system-ui, sans-serif; font-size: clamp(28px, 3.5vw, 48px); line-height: 1.18; font-weight: 600; letter-spacing: -0.015em; color: var(--ink); text-wrap: pretty; }
++.tq figcaption { font-size: 16px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.5; }
++.tq figcaption b { font-weight: 700; }
++.tq figcaption span { display: block; font-weight: 400; color: var(--cobalt); }
++.proof .sechead { margin-bottom: var(--s-head); }
++
++/* More of me */
++.more { background: var(--cobalt); color: var(--warm); --focus: #ff6fb8; }
++.more .h2 { color: var(--warm); }
++.rows { margin-top: var(--s-head); border-bottom: 2px solid rgba(255, 249, 244, 0.35); }
++.row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.8fr) auto; gap: 40px; align-items: center; padding-block: 44px; border-top: 2px solid rgba(255, 249, 244, 0.35); transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
++.rhead { display: flex; align-items: center; gap: 28px; }
++.av { flex: none; width: 76px; height: 76px; border-radius: 50%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
++.row:hover .av { transform: scale(1.14) rotate(-8deg); }
++.row .rt { font-size: clamp(38px, 5.2vw, 78px); line-height: 0.95; transition: color 0.25s; }
++.row p { font-size: 19px; line-height: 1.5; max-width: 22em; }
++.row .go { display: inline-flex; align-items: center; gap: 14px; white-space: nowrap; font-weight: 600; font-size: 17px; }
++.row .go span { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: var(--pink); color: var(--ink); font-size: 22px; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s; }
++.row:hover { padding-left: 24px; }
++.row:hover .rt { color: var(--pink); }
++.row:hover .go span { transform: rotate(45deg); background: var(--warm); }
++@media (max-width: 860px) { .av { width: 60px; height: 60px; } .rhead { gap: 18px; } .row { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 32px; } .row:hover { padding-left: 0; } }
++
++/* Kitchen */
++.kitchen { background: var(--warm); color: var(--ink); padding-block: var(--s-section); --focus: #0047ab; }
++.khead { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: var(--s-head); }
++.kitchen .sechead .h2 { color: var(--cobalt); }
++.fn .kitchen .arrowbtn { border-color: var(--ink); color: var(--ink); }
++.fn .kitchen .arrowbtn:hover { background: var(--pink); border-color: var(--pink); color: var(--ink); }
++.arrows { display: flex; gap: 14px; }
++.track { display: flex; gap: 28px; align-items: flex-start; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 40px 32px var(--gutter); scroll-padding-left: var(--gutter); }
++.track::-webkit-scrollbar { display: none; }
++.reel { position: relative; flex: 0 0 auto; width: min(280px, 72vw); aspect-ratio: 9 / 16; border-radius: 999px 999px 28px 28px; overflow: hidden; scroll-snap-align: start; background: var(--royal); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
++.reel:nth-child(even) { margin-top: 44px; }
++.reel:hover { transform: translateY(-10px); }
++.reel img, .reel video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
++.rplay { position: absolute; left: 50%; bottom: 22px; width: 66px; height: 66px; margin-left: -33px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--pink); border: 0; border-radius: 50%; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
++.rplay:hover { transform: scale(1.12); }
++.rplay .tri { border-left: 18px solid var(--ink); border-top-width: 11px; border-bottom-width: 11px; margin-left: 5px; }
++@media (prefers-reduced-motion: reduce) { .reel { transition: none; } }
++@media (max-width: 560px) { .track { padding-left: 20px; scroll-padding-left: 20px; } }
++
++/* Final */
++.final { background: var(--pink); color: var(--ink); padding-top: var(--s-section); }
++.final .mega { font-size: clamp(60px, 11.4vw, 176px); line-height: 0.88; letter-spacing: -0.03em; text-wrap: balance; }
++.fgrid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: clamp(48px, 6vw, 88px); align-items: start; padding-block: var(--s-head) var(--s-section); }
++.final .lead { font-size: 24px; line-height: 1.5; max-width: 22em; margin-bottom: 44px; }
++.fcta { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; }
++.fcta .note { font-size: 36px; line-height: 1; color: var(--cobalt); transform: rotate(-4deg); }
++.goes li { padding-block: 32px; border-top: 2px solid var(--ink); font-size: 19px; line-height: 1.5; }
++.goes li:last-child { border-bottom: 2px solid var(--ink); }
++.goes li b { display: block; font-family: var(--font-bodoni), 'Bodoni Moda', Georgia, serif; font-style: italic; font-weight: 800; font-size: 36px; line-height: 1.05; margin-bottom: 6px; letter-spacing: -0.01em; }
++@media (max-width: 960px) { .fgrid { grid-template-columns: minmax(0, 1fr); gap: 48px; } }
++
++/* Footer */
++.footer { background: var(--ink); color: var(--warm); overflow: hidden; --focus: #ff6fb8; }
++.foot { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 40px; padding-block: 88px 56px; font-size: 17px; line-height: 1.7; }
++.foot .fbrand { display: block; font-size: 34px; line-height: 1; margin-bottom: 14px; }
++.foot h3 { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px; color: var(--pink); }
++.foot ul { display: flex; flex-direction: column; gap: 6px; }
++.foot a { border-bottom: 2px solid transparent; transition: border-color 0.2s; }
++.foot a:hover { border-color: var(--pink); }
++.legal { padding-block: 0 24px; font-size: 16px; opacity: 0.8; }
++.wordmark { font-size: clamp(90px, 21vw, 330px); line-height: 0.8; color: var(--royal); white-space: nowrap; margin-top: 8px; margin-left: -0.02em; user-select: none; }
++@media (max-width: 960px) { .foot { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
++@media (max-width: 560px) { .wrap { padding-inline: 20px; } .foot { grid-template-columns: minmax(0, 1fr); } }
+diff --git a/app/icon.svg b/app/icon.svg
+new file mode 100644
+index 0000000..b6eee38
+--- /dev/null
++++ b/app/icon.svg
+@@ -0,0 +1,5 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
++  <rect width="64" height="64" rx="14" fill="#0047ab" />
++  <text x="16" y="46" font-family="Georgia, 'Times New Roman', serif" font-size="40" font-style="italic" font-weight="800" fill="#fff9f4">F</text>
++  <circle cx="46" cy="44" r="4.5" fill="#ff6fb8" />
++</svg>
+diff --git a/app/layout.jsx b/app/layout.jsx
+new file mode 100644
+index 0000000..513f6fe
+--- /dev/null
++++ b/app/layout.jsx
+@@ -0,0 +1,55 @@
++import localFont from 'next/font/local';
++import './globals.css';
++
++const outfit = localFont({
++  src: './fonts/outfit-latin-wght-normal.woff2',
++  variable: '--font-outfit',
++  weight: '100 900',
++  display: 'swap',
++});
++
++const bodoni = localFont({
++  src: [
++    {
++      path: './fonts/bodoni-moda-latin-opsz-normal.woff2',
++      style: 'normal',
++      weight: '400 900',
++    },
++    {
++      path: './fonts/bodoni-moda-latin-opsz-italic.woff2',
++      style: 'italic',
++      weight: '400 900',
++    },
++  ],
++  variable: '--font-bodoni',
++  display: 'swap',
++});
++
++export const metadata = {
++  metadataBase: new URL(
++    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
++  ),
++  title: 'Farah Nicole | Life coach, chef and founder of Pivot and Pop PR',
++  description:
++    'Life coaching for parents, busy professionals and business owners. Start with a free 15-minute call with Farah Nicole.',
++  applicationName: 'Farah Nicole',
++  openGraph: {
++    title: 'Farah Nicole | Life coach, chef and founder of Pivot and Pop PR',
++    description:
++      'Life coaching for parents, busy professionals and business owners. Start with a free 15-minute call.',
++    type: 'website',
++    images: ['/assets/a8f6a24383fc9c2204d8c268ea1c1933.jpg'],
++  },
++};
++
++export const viewport = {
++  themeColor: '#fff9f4',
++};
++
++export default function RootLayout({ children }) {
++  return (
++    <html lang="en" className={`${outfit.variable} ${bodoni.variable}`}>
++      <body>{children}</body>
++    </html>
++  );
++}
+diff --git a/app/page.jsx b/app/page.jsx
+new file mode 100644
+index 0000000..27f7915
+--- /dev/null
++++ b/app/page.jsx
+@@ -0,0 +1,34 @@
++import Hero from '../components/Hero';
++import Ticker from '../components/Ticker';
++import Coaching from '../components/Coaching';
++import About from '../components/About';
++import Quote from '../components/Quote';
++import Proof from '../components/Proof';
++import BookCta from '../components/BookCta';
++import More from '../components/More';
++import Kitchen from '../components/Kitchen';
++import Footer from '../components/Footer';
++
++export default function Home() {
++  return (
++    <div className="fn">
++      <a className="skip" href="#coaching">
++        Skip to coaching
++      </a>
++
++      <main id="top">
++        <Hero />
++      </main>
++
++      <Ticker />
++      <Coaching />
++      <About />
++      <Quote />
++      <Proof />
++      <BookCta />
++      <More />
++      <Kitchen />
++      <Footer />
++    </div>
++  );
++}
+diff --git a/components/About.jsx b/components/About.jsx
+new file mode 100644
+index 0000000..4e1d15f
+--- /dev/null
++++ b/components/About.jsx
+@@ -0,0 +1,32 @@
++export default function About() {
++  return (
++    <section id="about" className="light" aria-labelledby="about-title">
++      <div className="wrap sec">
++        <div className="about">
++          <figure className="aph reveal">
++            <img
++              src="/assets/10ca37666943f29e166adb598b610bf7.jpg"
++              alt="Farah smiling and holding a glass beside a bar cart with flowers, lemons and a jug"
++            />
++            <figcaption className="serif">Chef, author, coach</figcaption>
++          </figure>
++          <div className="copy reveal">
++            <h2 id="about-title" className="serif h2">
++              All those careers were the training.
++            </h2>
++            <p className="body">
++              I am an author, a classically trained chef, an event PR
++              professional and a business coach. For years people called me a
++              jill of all trades, and I started to believe them.
++            </p>
++            <p className="body">
++              Then I spent six months on St. Croix, watching the waves, and saw
++              it differently. Every venture was a notch in my belt and part of
++              the credibility I now bring to yours.
++            </p>
++          </div>
++        </div>
++      </div>
++    </section>
++  );
++}
+diff --git a/components/BookCta.jsx b/components/BookCta.jsx
+new file mode 100644
+index 0000000..e7c0002
+--- /dev/null
++++ b/components/BookCta.jsx
+@@ -0,0 +1,48 @@
++import { siteConfig } from '../lib/site';
++
++export default function BookCta() {
++  const { bookingUrl } = siteConfig;
++
++  return (
++    <section id="book" className="final" aria-labelledby="book-title">
++      <div className="wrap">
++        <h2 id="book-title" className="serif mega reveal">
++          Start with 15 minutes.
++        </h2>
++        <div className="fgrid">
++          <div className="reveal">
++            <p className="lead">
++              Tell me what is on your plate. I will tell you plainly whether
++              coaching can help.
++            </p>
++            <div className="fcta">
++              <a
++                className="btn btn-solid"
++                href={bookingUrl}
++                target="_blank"
++                rel="noopener"
++              >
++                Book my free 15 min
++              </a>
++              <span className="serif note">It's on me</span>
++            </div>
++          </div>
++          <ul className="goes">
++            <li className="reveal">
++              <b>You talk.</b>Parenting, work, your business, or all three.
++              Whatever is loudest right now.
++            </li>
++            <li className="reveal">
++              <b>We pick one thing.</b>The change that would make the biggest
++              difference first.
++            </li>
++            <li className="reveal">
++              <b>I give you my honest read.</b>If I can help, I will say how. If
++              not, you leave with a clearer plan.
++            </li>
++          </ul>
++        </div>
++      </div>
++    </section>
++  );
++}
+diff --git a/components/Coaching.jsx b/components/Coaching.jsx
+new file mode 100644
+index 0000000..ef45836
+--- /dev/null
++++ b/components/Coaching.jsx
+@@ -0,0 +1,75 @@
++export default function Coaching() {
++  return (
++    <section id="coaching" className="light" aria-labelledby="coaching-title">
++      <div className="wrap sec" style={{ paddingBottom: 'var(--s-head)' }}>
++        <div className="sechead reveal">
++          <h2 id="coaching-title" className="serif h2">
++            Where do you want things to change?
++          </h2>
++          <p className="body">
++            Pick the area that feels most urgent. The free 15 minutes will tell
++            us if it is the right place to start.
++          </p>
++        </div>
++      </div>
++      <div className="panels">
++        <article className="panel p1">
++          <img
++            className="pfull"
++            src="/assets/c5448cd4aed04f6d79793e975fb2a867.jpg"
++            alt=""
++            loading="lazy"
++          />
++          <span className="pscrim" aria-hidden="true" />
++          <span className="pring" aria-hidden="true" />
++          <div className="pin">
++            <h3 className="serif">Parenting coach</h3>
++            <p className="body">
++              Raise kids without losing yourself. Practical plans for the
++              toddler years, the teenage years and the quiet house after they
++              leave.
++            </p>
++          </div>
++        </article>
++        <article className="panel p2">
++          <img
++            className="pfull"
++            src="/assets/83f959416ea63f46848636f85d30f878.jpg"
++            alt=""
++            loading="lazy"
++          />
++          <span className="pscrim" aria-hidden="true" />
++          <span className="pring" aria-hidden="true" />
++          <span className="ring" aria-hidden="true" />
++          <div className="pin">
++            <h3 className="serif">Work-life balance coach</h3>
++            <p className="body">
++              Stop treating rest like a reward. We map your week, drop what has
++              not earned its place and protect what has.
++            </p>
++          </div>
++        </article>
++        <article className="panel p3">
++          <img
++            className="pfull"
++            src="/assets/f242224529b21d0cf23e6fb98c975a66.jpg"
++            alt=""
++            loading="lazy"
++          />
++          <span className="pscrim" aria-hidden="true" />
++          <span className="pring" aria-hidden="true" />
++          <span className="half" aria-hidden="true" />
++          <span className="dot" aria-hidden="true" />
++          <div className="pin">
++            <h3 className="serif">Business coach</h3>
++            <p className="body">
++              Turn the skills you have collected into a business people pay
++              for. Your offer, your pricing, your visibility and your first
++              clients.
++            </p>
++          </div>
++        </article>
++      </div>
++    </section>
++  );
++}
+diff --git a/components/Footer.jsx b/components/Footer.jsx
+new file mode 100644
+index 0000000..da66dc6
+--- /dev/null
++++ b/components/Footer.jsx
+@@ -0,0 +1,102 @@
++export default function Footer() {
++  return (
++    <footer className="footer">
++      <div className="wrap">
++        <div className="foot">
++          <div>
++            <a className="serif fbrand" href="#top">
++              Farah Nicole
++            </a>
++            <p>
++              Life coach, chef, author and founder of Pivot and Pop PR.
++            </p>
++          </div>
++          <div>
++            <h3>Explore</h3>
++            <ul>
++              <li>
++                <a href="#coaching">Coaching</a>
++              </li>
++              <li>
++                <a href="#about">About Farah</a>
++              </li>
++              <li>
++                <a href="#kitchen">The kitchen</a>
++              </li>
++            </ul>
++          </div>
++          <div>
++            <h3>Elsewhere</h3>
++            <ul>
++              <li>
++                <a
++                  href="https://www.pivotandpoppr.com"
++                  target="_blank"
++                  rel="noopener"
++                >
++                  Pivot and Pop PR
++                </a>
++              </li>
++              <li>
++                <a
++                  href="https://www.pivotandpoppr.com/category/all-products"
++                  target="_blank"
++                  rel="noopener"
++                >
++                  The shop
++                </a>
++              </li>
++              <li>
++                <a
++                  href="https://www.instagram.com/pivotandpoppr/"
++                  target="_blank"
++                  rel="noopener"
++                >
++                  Instagram
++                </a>
++              </li>
++              <li>
++                <a
++                  href="https://www.linkedin.com/in/farahnicole-davids-050756253/"
++                  target="_blank"
++                  rel="noopener"
++                >
++                  LinkedIn
++                </a>
++              </li>
++              <li>
++                <a
++                  href="https://web.facebook.com/people/Pivot-and-Pop-PR/61559087970911/"
++                  target="_blank"
++                  rel="noopener"
++                >
++                  Facebook
++                </a>
++              </li>
++              <li>
++                <a
++                  href="https://x.com/pivotandpoppr"
++                  target="_blank"
++                  rel="noopener"
++                >
++                  X
++                </a>
++              </li>
++            </ul>
++          </div>
++          <div>
++            <h3>Say hello</h3>
++            <ul>
++              <li>farahnicole@pivotandpoppr.com</li>
++              <li>689-224-0918</li>
++            </ul>
++          </div>
++        </div>
++        <p className="legal">© 2026 Farah Nicole. All rights reserved.</p>
++      </div>
++      <p className="serif wordmark" aria-hidden="true">
++        Farah Nicole
++      </p>
++    </footer>
++  );
++}
+diff --git a/components/Hero.jsx b/components/Hero.jsx
+new file mode 100644
+index 0000000..50a8ee0
+--- /dev/null
++++ b/components/Hero.jsx
+@@ -0,0 +1,114 @@
++import { siteConfig } from '../lib/site';
++
++const heroPoster = '/assets/a8f6a24383fc9c2204d8c268ea1c1933.jpg';
++
++export default function Hero() {
++  const { bookingUrl, introVideoUrl, introVideoRatio } = siteConfig;
++  const hasIntroVideo = Boolean(introVideoUrl);
++
++  return (
++    <section
++      className="hero"
++      aria-labelledby="hero-title"
++      style={{ '--vr': introVideoRatio }}
++    >
++      <header className="nav">
++        <a className="serif brand" href="#top">
++          Farah Nicole
++        </a>
++        <nav className="navright" aria-label="Main">
++          <div className="links">
++            <a href="#coaching">Coaching</a>
++            <a href="#about">About</a>
++            <a href="#kitchen">Kitchen</a>
++            <a href="#more">More of me</a>
++          </div>
++          <a className="btn" href={bookingUrl} target="_blank" rel="noopener">
++            Book my free 15 min
++          </a>
++        </nav>
++      </header>
++
++      <div className="htext">
++        <span className="cf cf1" aria-hidden="true" />
++        <span className="cf cf2" aria-hidden="true" />
++        <span className="cf cf3" aria-hidden="true" />
++        <span className="cf cf4" aria-hidden="true" />
++        <span className="cf cf5" aria-hidden="true" />
++        <span className="cf cf6" aria-hidden="true" />
++        <h1 id="hero-title" className="serif h1 rise">
++          Everything you need, you{' '}
++          <span className="al">
++            already
++            <svg
++              viewBox="0 0 200 16"
++              preserveAspectRatio="none"
++              aria-hidden="true"
++            >
++              <path d="M3 10 C 40 2, 80 14, 130 6 S 190 8, 197 4" />
++            </svg>
++          </span>{' '}
++          have.
++        </h1>
++        <p className="lede rise d2">
++          Life coaching for parents, busy professionals and business owners.
++          Start with a free 15-minute call with me.
++        </p>
++        <a className="seelink rise d3" href="#coaching">
++          See how I coach
++        </a>
++      </div>
++
++      <a
++        className="badge"
++        href={bookingUrl}
++        target="_blank"
++        rel="noopener"
++        aria-label="Book my free 15 min"
++      >
++        <svg className="ring" viewBox="0 0 160 160" aria-hidden="true">
++          <defs>
++            <path
++              id="ringpath"
++              d="M 80 80 m -57 0 a 57 57 0 1 1 114 0 a 57 57 0 1 1 -114 0"
++            />
++          </defs>
++          <text>
++            <textPath href="#ringpath" textLength="352" lengthAdjust="spacing">
++              Book my free 15 min · Book my free 15 min ·
++            </textPath>
++          </text>
++        </svg>
++        <span className="core" aria-hidden="true">
++          ↗
++        </span>
++      </a>
++
++      <div className="hphoto">
++        {hasIntroVideo ? (
++          <video
++            src={introVideoUrl}
++            poster={heroPoster}
++            controls
++            playsInline
++            preload="metadata"
++          />
++        ) : (
++          <>
++            <img
++              src={heroPoster}
++              alt="Farah Nicole smiling at the camera in a black and pink floral top"
++            />
++            <button
++              className="play"
++              type="button"
++              aria-label="Play intro video from Farah"
++            >
++              <span className="tri" />
++            </button>
++          </>
++        )}
++      </div>
++    </section>
++  );
++}
+diff --git a/components/Kitchen.jsx b/components/Kitchen.jsx
+new file mode 100644
+index 0000000..12d9dde
+--- /dev/null
++++ b/components/Kitchen.jsx
+@@ -0,0 +1,99 @@
++'use client';
++
++import { useRef, useState } from 'react';
++import { cookingClips } from '../lib/site';
++
++export default function Kitchen() {
++  const trackRef = useRef(null);
++  const [playing, setPlaying] = useState(null);
++
++  const slide = (dir) => () => {
++    const track = trackRef.current;
++    if (!track) return;
++    const reduce =
++      typeof window !== 'undefined' &&
++      window.matchMedia &&
++      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
++    track.scrollBy({ left: dir * 308, behavior: reduce ? 'auto' : 'smooth' });
++  };
++
++  const reels = cookingClips.map((c, i) => ({
++    ...c,
++    label: 'Play cooking clip ' + (i + 1),
++    isPlaying: playing === c.id && !!c.video,
++    notPlaying: !(playing === c.id && !!c.video),
++    play: () => {
++      if (c.video) setPlaying(c.id);
++    },
++  }));
++
++  return (
++    <section
++      id="kitchen"
++      className="kitchen"
++      data-reels="1"
++      aria-labelledby="kitchen-title"
++    >
++      <div className="wrap khead">
++        <div className="sechead reveal">
++          <h2 id="kitchen-title" className="serif h2">
++            Watch me cook.
++          </h2>
++          <p className="body">Short clips from my cooking show. Tap one to watch.</p>
++        </div>
++        <div className="arrows">
++          <button
++            className="btn arrowbtn"
++            type="button"
++            aria-label="Previous clips"
++            onClick={slide(-1)}
++          >
++            ←
++          </button>
++          <button
++            className="btn arrowbtn"
++            type="button"
++            aria-label="Next clips"
++            onClick={slide(1)}
++          >
++            →
++          </button>
++        </div>
++      </div>
++      <div
++        className="track"
++        data-track="1"
++        tabIndex={0}
++        role="region"
++        aria-label="Cooking clips, scroll sideways"
++        ref={trackRef}
++      >
++        {reels.map((reel) => (
++          <article className="reel" key={reel.id}>
++            {reel.isPlaying ? (
++              <video
++                src={reel.video}
++                poster={reel.poster}
++                autoPlay
++                controls
++                playsInline
++              />
++            ) : (
++              <>
++                <img src={reel.poster} alt={reel.alt} />
++                <button
++                  className="rplay"
++                  type="button"
++                  aria-label={reel.label}
++                  onClick={reel.play}
++                >
++                  <span className="tri" />
++                </button>
++              </>
++            )}
++          </article>
++        ))}
++      </div>
++    </section>
++  );
++}
+diff --git a/components/More.jsx b/components/More.jsx
+new file mode 100644
+index 0000000..fb59d34
+--- /dev/null
++++ b/components/More.jsx
+@@ -0,0 +1,99 @@
++export default function More() {
++  return (
++    <section id="more" className="more" aria-labelledby="more-title">
++      <div className="wrap sec">
++        <div className="sechead reveal">
++          <h2 id="more-title" className="serif h2">
++            More ways to spend time with me.
++          </h2>
++        </div>
++        <ul className="rows">
++          <li className="reveal">
++            <a className="row" href="#kitchen">
++              <span className="rhead">
++                <img
++                  className="av"
++                  src="/assets/d53b3fd3794bfed20bf3684a430b3d25.jpg"
++                  alt=""
++                  loading="lazy"
++                />
++                <span className="serif rt">The kitchen</span>
++              </span>
++              <p>I trained as a chef and still cook like one. Watch the show.</p>
++              <span className="go">
++                Watch the clips <span aria-hidden="true">↗</span>
++              </span>
++            </a>
++          </li>
++          <li className="reveal">
++            <a className="row" href="#more">
++              <span className="rhead">
++                <img
++                  className="av"
++                  src="/assets/93acc881efcabbbdc76b486f32e43fdf.jpg"
++                  alt=""
++                  loading="lazy"
++                />
++                <span className="serif rt">The podcast</span>
++              </span>
++              <p>
++                Conversations on parenting, work and building something of your
++                own.
++              </p>
++              <span className="go">
++                Listen in <span aria-hidden="true">↗</span>
++              </span>
++            </a>
++          </li>
++          <li className="reveal">
++            <a
++              className="row"
++              href="https://www.pivotandpoppr.com"
++              target="_blank"
++              rel="noopener"
++            >
++              <span className="rhead">
++                <img
++                  className="av"
++                  src="/assets/a2610440e9cf5a7acdab1dcd39be12db.jpg"
++                  alt=""
++                  loading="lazy"
++                />
++                <span className="serif rt">Pivot and Pop PR</span>
++              </span>
++              <p>
++                Event PR for launches, conferences and entertainment, plus
++                business consulting.
++              </p>
++              <span className="go">
++                Visit the agency <span aria-hidden="true">↗</span>
++              </span>
++            </a>
++          </li>
++          <li className="reveal">
++            <a
++              className="row"
++              href="https://www.pivotandpoppr.com/let-s-pivot"
++              target="_blank"
++              rel="noopener"
++            >
++              <span className="rhead">
++                <img
++                  className="av"
++                  src="/assets/ec79a1aa63b895985e89dfc7dfde4561.jpg"
++                  alt=""
++                  loading="lazy"
++                />
++                <span className="serif rt">Talks and workshops</span>
++              </span>
++              <p>Speaking, workshops and retreats for teams and communities.</p>
++              <span className="go">
++                See what I offer <span aria-hidden="true">↗</span>
++              </span>
++            </a>
++          </li>
++        </ul>
++      </div>
++    </section>
++  );
++}
+diff --git a/components/Proof.jsx b/components/Proof.jsx
+new file mode 100644
+index 0000000..17a39f8
+--- /dev/null
++++ b/components/Proof.jsx
+@@ -0,0 +1,60 @@
++export default function Proof() {
++  return (
++    <section id="proof" className="proof light" aria-labelledby="proof-title">
++      <div className="wrap sec">
++        <div className="sechead reveal">
++          <h2 id="proof-title" className="serif h2">
++            What people say.
++          </h2>
++        </div>
++        <div>
++          <figure className="tq reveal">
++            <span className="qm" aria-hidden="true">
++              "
++            </span>
++            <blockquote>
++              <p>
++                I walked in juggling everything. I walked out with a plan for
++                the week and a free Sunday.
++              </p>
++            </blockquote>
++            <figcaption>
++              <b>[Client name]</b>
++              <span>Parent of two</span>
++            </figcaption>
++          </figure>
++          <figure className="tq reveal">
++            <span className="qm" aria-hidden="true">
++              "
++            </span>
++            <blockquote>
++              <p>
++                Farah asked the question I had been avoiding for two years. Then
++                she helped me answer it.
++              </p>
++            </blockquote>
++            <figcaption>
++              <b>[Client name]</b>
++              <span>Marketing director</span>
++            </figcaption>
++          </figure>
++          <figure className="tq reveal">
++            <span className="qm" aria-hidden="true">
++              "
++            </span>
++            <blockquote>
++              <p>
++                My offer finally made sense, and so did my pricing. I booked my
++                first clients that month.
++              </p>
++            </blockquote>
++            <figcaption>
++              <b>[Client name]</b>
++              <span>New business owner</span>
++            </figcaption>
++          </figure>
++        </div>
++      </div>
++    </section>
++  );
++}
+diff --git a/components/Quote.jsx b/components/Quote.jsx
+new file mode 100644
+index 0000000..94b4410
+--- /dev/null
++++ b/components/Quote.jsx
+@@ -0,0 +1,13 @@
++export default function Quote() {
++  return (
++    <section className="quote" aria-label="Farah's promise">
++      <div className="wrap">
++        <p className="serif big reveal">
++          I want to see you <b>win</b> more than I want to win because that's a
++          win for us both.
++        </p>
++        <p className="by">Farah Nicole, founder of Pivot and Pop PR</p>
++      </div>
++    </section>
++  );
++}
+diff --git a/components/Ticker.jsx b/components/Ticker.jsx
+new file mode 100644
+index 0000000..0a2d832
+--- /dev/null
++++ b/components/Ticker.jsx
+@@ -0,0 +1,41 @@
++function TickSet() {
++  return (
++    <div className="tick-set serif">
++      <span>Parenting coach</span>
++      <svg viewBox="0 0 24 24">
++        <path d="M12 1 C13 8 16 11 23 12 C16 13 13 16 12 23 C11 16 8 13 1 12 C8 11 11 8 12 1 Z" />
++      </svg>
++      <span>Work-life balance coach</span>
++      <svg viewBox="0 0 24 24">
++        <path d="M12 1 C13 8 16 11 23 12 C16 13 13 16 12 23 C11 16 8 13 1 12 C8 11 11 8 12 1 Z" />
++      </svg>
++      <span>Business coach</span>
++      <svg viewBox="0 0 24 24">
++        <path d="M12 1 C13 8 16 11 23 12 C16 13 13 16 12 23 C11 16 8 13 1 12 C8 11 11 8 12 1 Z" />
++      </svg>
++      <span>Parenting coach</span>
++      <svg viewBox="0 0 24 24">
++        <path d="M12 1 C13 8 16 11 23 12 C16 13 13 16 12 23 C11 16 8 13 1 12 C8 11 11 8 12 1 Z" />
++      </svg>
++      <span>Work-life balance coach</span>
++      <svg viewBox="0 0 24 24">
++        <path d="M12 1 C13 8 16 11 23 12 C16 13 13 16 12 23 C11 16 8 13 1 12 C8 11 11 8 12 1 Z" />
++      </svg>
++      <span>Business coach</span>
++      <svg viewBox="0 0 24 24">
++        <path d="M12 1 C13 8 16 11 23 12 C16 13 13 16 12 23 C11 16 8 13 1 12 C8 11 11 8 12 1 Z" />
++      </svg>
++    </div>
++  );
++}
++
++export default function Ticker() {
++  return (
++    <div className="tick" aria-hidden="true">
++      <div className="tick-track">
++        <TickSet />
++        <TickSet />
++      </div>
++    </div>
++  );
++}
+diff --git a/lib/site.js b/lib/site.js
+new file mode 100644
+index 0000000..3f0e1ec
+--- /dev/null
++++ b/lib/site.js
+@@ -0,0 +1,54 @@
++// Site configuration. Each value can be overridden at build time with
++// environment variables so the deployed site stays editable without code changes.
++
++export const siteConfig = {
++  // The mockup's default booking target for the free 15-minute session.
++  bookingUrl:
++    process.env.NEXT_PUBLIC_BOOKING_URL ||
++    'https://www.pivotandpoppr.com/let-s-pop',
++  // Drop the intro video URL here (or set NEXT_PUBLIC_INTRO_VIDEO_URL).
++  // While empty, the hero shows the poster frame with a play button.
++  introVideoUrl: (process.env.NEXT_PUBLIC_INTRO_VIDEO_URL || '').trim(),
++  // Hero video frame ratio on mobile: "4 / 5" | "16 / 9" | "9 / 16".
++  introVideoRatio: process.env.NEXT_PUBLIC_INTRO_VIDEO_RATIO || '4 / 5',
++};
++
++// Cooking clips. Add each clip's video link in `video`; `poster` stands in until then.
++export const cookingClips = [
++  {
++    id: 'r1',
++    poster: '/assets/b34c0d711ad905a1a527cf7bf8ae47a4.jpg',
++    video: '',
++    alt: 'Farah smiling with a glass in hand',
++  },
++  {
++    id: 'r2',
++    poster: '/assets/0502d8d883763c5d94eb706e40e06709.jpg',
++    video: '',
++    alt: 'Fresh flowers, a glass jug and a champagne bottle on a bar cart',
++  },
++  {
++    id: 'r3',
++    poster: '/assets/3302ce1f0cf557e6bafee3137d47db98.jpg',
++    video: '',
++    alt: 'A bucket of lemons and a jug on a gold bar cart',
++  },
++  {
++    id: 'r4',
++    poster: '/assets/110d3d196aaf7fb49a8240a61b7ecdab.jpg',
++    video: '',
++    alt: 'Close portrait of Farah smiling',
++  },
++  {
++    id: 'r5',
++    poster: '/assets/c8ee6ba8c96cf2c42222de1af94360cb.jpg',
++    video: '',
++    alt: 'Farah laughing on a grey sofa with a teal cushion',
++  },
++  {
++    id: 'r6',
++    poster: '/assets/32ec3630f4a85da50f186a19bb66dc00.jpg',
++    video: '',
++    alt: 'Peonies in a gold vase beside a side table with notebooks',
++  },
++];
+diff --git a/next.config.mjs b/next.config.mjs
+new file mode 100644
+index 0000000..3651543
+--- /dev/null
++++ b/next.config.mjs
+@@ -0,0 +1,17 @@
++/** @type {import('next').NextConfig} */
++const nextConfig = {
++  reactStrictMode: true,
++  async redirects() {
++    // The site used to be static pages; keep old URLs working.
++    return [
++      { source: '/index.html', destination: '/', permanent: false },
++      {
++        source: '/:page(about|book|coaching|kitchen|pr|show).html',
++        destination: '/',
++        permanent: false,
++      },
++    ];
++  },
++};
++
++export default nextConfig;
+diff --git a/package-lock.json b/package-lock.json
+new file mode 100644
+index 0000000..04e84bf
+--- /dev/null
++++ b/package-lock.json
+@@ -0,0 +1,955 @@
++{
++  "name": "farah-nicole",
++  "version": "1.0.0",
++  "lockfileVersion": 3,
++  "requires": true,
++  "packages": {
++    "": {
++      "name": "farah-nicole",
++      "version": "1.0.0",
++      "dependencies": {
++        "next": "16.4.0",
++        "react": "19.3.0",
++        "react-dom": "19.3.0"
++      },
++      "engines": {
++        "node": ">=20"
++      }
++    },
++    "node_modules/@emnapi/runtime": {
++      "version": "1.11.3",
++      "resolved": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.11.3.tgz",
++      "integrity": "sha512-Xz4Tpyki7XyrpbUK1jR1AhdAdaXyhhY4lZ3neLodmhpuWfy2PAQN5B46sAiU4liOXGLkHypn/qU+jvfWSCYYLA==",
++      "license": "MIT",
++      "optional": true,
++      "dependencies": {
++        "tslib": "^2.4.0"
++      }
++    },
++    "node_modules/@img/colour": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/@img/colour/-/colour-1.1.0.tgz",
++      "integrity": "sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==",
++      "license": "MIT",
++      "optional": true,
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@img/sharp-darwin-arm64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-darwin-arm64/-/sharp-darwin-arm64-0.35.5.tgz",
++      "integrity": "sha512-QRUlFQ0WxvdWyqqG/WtI3iupfD5rBzmCHXSdPsY91sAtVtTo7Q4cb6zOccZ3gqEqkr0f1As1ehLqmEpDsRf+lg==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-darwin-arm64": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-darwin-x64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-darwin-x64/-/sharp-darwin-x64-0.35.5.tgz",
++      "integrity": "sha512-+BR255RhDlpygUpOc/Jdt1nT6DQ3XG/ERo5wbcdOf5Q320dKtPCKPLR1LJs9VGXRaMa8l1uUa0tkCNOXiAxZUw==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-darwin-x64": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-freebsd-wasm32": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-freebsd-wasm32/-/sharp-freebsd-wasm32-0.35.5.tgz",
++      "integrity": "sha512-Y/z91nEZ4uIBX5X3nfTovjU9lHNKFYbL2lpHCLVNmXQK03VIZvXBBt0KxbPGp2SdGSF+2mQU4e+hQaWOt86iAw==",
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "freebsd"
++      ],
++      "dependencies": {
++        "@img/sharp-wasm32": "0.35.5"
++      },
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-darwin-arm64": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-darwin-arm64/-/sharp-libvips-darwin-arm64-1.3.4.tgz",
++      "integrity": "sha512-5R89nBYiRdUlSWJxPhO+GVtaXzXSxKnRu/xqMn3KTA3L9EB9Oy/P+Nn2f2vlhPuUdy/Zusb2DarbyTpGCfEDuw==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-darwin-x64": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-darwin-x64/-/sharp-libvips-darwin-x64-1.3.4.tgz",
++      "integrity": "sha512-iR2OKH80yi0U+dUplyh3/xdpFvps6YkCwsXenIJxqxR1v9o+xtKTGbS9H7cps+2Vxjc8B1j96p75NmTGjIhtpQ==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-arm": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-arm/-/sharp-libvips-linux-arm-1.3.4.tgz",
++      "integrity": "sha512-LmRtTsOHuvM2+wlO2Db37dx5MiZhB0FvSunciw48YjdOkZz9KAiRbm8ujeMOA1INqmei5NapFxYEK1D1ZSidmw==",
++      "cpu": [
++        "arm"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-arm64": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-arm64/-/sharp-libvips-linux-arm64-1.3.4.tgz",
++      "integrity": "sha512-Y3dgX/6lE2QhQb+Gxy0WZxfg9MEm/JBjamZpS2IklP7xIQoKN4hzAm7KcMVGtaVDt3neE9OKBC7vAfonA/Lr1A==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-ppc64": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-ppc64/-/sharp-libvips-linux-ppc64-1.3.4.tgz",
++      "integrity": "sha512-Le6boB8Tai0Nis+gIxIpKx68UDVVIqdR8Tin5Yf1z2LJJQLDJvCDRqRu+jC2qCoD+eIomonmOwB4smBRxfVpYQ==",
++      "cpu": [
++        "ppc64"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-riscv64": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-riscv64/-/sharp-libvips-linux-riscv64-1.3.4.tgz",
++      "integrity": "sha512-aHkkIEHPRdQEegJN20MLmGtxYD9R2wQr3Cwpddnu5+YKMt6Uzax7S9h5gpZTo8wyrGuZSlfQ63OevL5mTyOC7Q==",
++      "cpu": [
++        "riscv64"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-s390x": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-s390x/-/sharp-libvips-linux-s390x-1.3.4.tgz",
++      "integrity": "sha512-ra/mB6MikESDUO7Yg+Mi95bFBb9GsObURuhnOv3OqknjGe9sZrG8tCe9q0xSIGrtLgvgw0gKnFWcK4blSgQOuQ==",
++      "cpu": [
++        "s390x"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linux-x64": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-x64/-/sharp-libvips-linux-x64-1.3.4.tgz",
++      "integrity": "sha512-GJ//SSXbnwSDes02umB3nDJLFcQzw8a18V8fyhqr6tV515tOEMdImjjxj1AoafMRz56F3PHgftnj1QEKSU1zkw==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linuxmusl-arm64": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-arm64/-/sharp-libvips-linuxmusl-arm64-1.3.4.tgz",
++      "integrity": "sha512-hvulFwtjUcagsis6BBxHwGFwWoNZjgYmULGVrZcyfNbjA8hKILbRxGg15/7w5HDyXHXUos/j6baAWqnCyQ2DWA==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-libvips-linuxmusl-x64": {
++      "version": "1.3.4",
++      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-x64/-/sharp-libvips-linuxmusl-x64-1.3.4.tgz",
++      "integrity": "sha512-6zXKeE/p39I1AmA3cJG35eyBGNqNddLnUXjhwBnsGjFPWqf5VKkDBEqaEkPDoTEtkxwi2vv8Tcr2mDyP4So7Fg==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-linux-arm": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-arm/-/sharp-linux-arm-0.35.5.tgz",
++      "integrity": "sha512-LEaXK2WdXVK5ykcw0buWyPMsmLLL2vpHLD6yrNSW+JGEL3BZPA4tpKN6iaMc4AxTTAoaX/sU1rOL51lcIz48ZQ==",
++      "cpu": [
++        "arm"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-arm": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-arm64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-arm64/-/sharp-linux-arm64-0.35.5.tgz",
++      "integrity": "sha512-LYVx5JTsOM2CBzmxreh+nl64/3H6Xb09iSLknqH47z2T2DFFxDeFLP5y4dJwe6H7uGQlHPyEEtIqyo3DYsRwdQ==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-arm64": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-ppc64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-ppc64/-/sharp-linux-ppc64-0.35.5.tgz",
++      "integrity": "sha512-QVxAAq8evVRI9ia2vqgwrmWucn5Dfv+JdWzj75pD8omHLPSP7f8p20O8jxzjCcuCEQEOtYOZUmX1hkiZ0kdevA==",
++      "cpu": [
++        "ppc64"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-ppc64": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-riscv64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-riscv64/-/sharp-linux-riscv64-0.35.5.tgz",
++      "integrity": "sha512-LtdreXguaavKODPIfzJ4kffx7UNt1omwtK0rch4EBbbSTXPnxWmYSayXdLJw0fJzQ97kHt1gL/yh4tvU+nCyRQ==",
++      "cpu": [
++        "riscv64"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-riscv64": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-s390x": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-s390x/-/sharp-linux-s390x-0.35.5.tgz",
++      "integrity": "sha512-UZasTOFiYzotTsGOCu42BfUzP6Tu6Do/947iRm1RsLKvlllxwGcn4RN27LibGWceix4Y+Pmw3jsnTcCQIgWjqA==",
++      "cpu": [
++        "s390x"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-s390x": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-linux-x64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linux-x64/-/sharp-linux-x64-0.35.5.tgz",
++      "integrity": "sha512-SxFtLTeJInhAA9Q836kux2vZNeOBQEx658qvbboZScr0wIARym3IcGmW7KpVD5sbVg0Ojy+udFQdayYIZyoNog==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linux-x64": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-linuxmusl-arm64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linuxmusl-arm64/-/sharp-linuxmusl-arm64-0.35.5.tgz",
++      "integrity": "sha512-9HbMclmI1zlNkFRs3z9/eBtDjfD0sGlrX1z6b1qwmiFY5ElDLh4BC0LPBdVp7z1DXFiKlIcznf+ZlsuZzLxQqg==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linuxmusl-arm64": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-linuxmusl-x64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-linuxmusl-x64/-/sharp-linuxmusl-x64-0.35.5.tgz",
++      "integrity": "sha512-4KOphqB035HrVdqLZfCgMzzERrQkkzOwRhl4OAkRO1YCldbaFjySXMaK534Mo0V+LndnlJk+sbUyLeU0ULyD1A==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-libvips-linuxmusl-x64": "1.3.4"
++      }
++    },
++    "node_modules/@img/sharp-wasm32": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-wasm32/-/sharp-wasm32-0.35.5.tgz",
++      "integrity": "sha512-Ptsga1su4tQx+LLF1ECS9U6nz5kmrXKo6XVbtR48Ke3ZRxxgaWBu7IDtEe1quo8hiupwm6WFqxVlXaSf7IINGQ==",
++      "license": "Apache-2.0 AND LGPL-3.0-or-later AND MIT",
++      "optional": true,
++      "dependencies": {
++        "@emnapi/runtime": "^1.11.3"
++      },
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-webcontainers-wasm32": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-webcontainers-wasm32/-/sharp-webcontainers-wasm32-0.35.5.tgz",
++      "integrity": "sha512-hfhF/FmoQyTUkA0bIKFOtw536BQSeBMe6BF6QyWlrPxT754+TFLaZ7sKKTfvvM0yJgKgaYTwnFCIZ/GuDw5SUA==",
++      "cpu": [
++        "wasm32"
++      ],
++      "license": "Apache-2.0",
++      "optional": true,
++      "dependencies": {
++        "@img/sharp-wasm32": "0.35.5"
++      },
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-win32-arm64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-win32-arm64/-/sharp-win32-arm64-0.35.5.tgz",
++      "integrity": "sha512-X4t7g+7ZA5DKblCBEXGjUqqemj4vczING/5viFwAL8h4N3qYeyjwdCvRLHi4EdOUI+2Z7UFlp1VM+p/AuEtm6Q==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "Apache-2.0 AND LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-win32-ia32": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-win32-ia32/-/sharp-win32-ia32-0.35.5.tgz",
++      "integrity": "sha512-5Zm82LoBc43nhwNybZlG7Y1KO//Zhsn306fQl29ZOuStHLGTo3BWL83q3cznX0poxSAMuYL1On/BHBxkBeKr6A==",
++      "cpu": [
++        "ia32"
++      ],
++      "license": "Apache-2.0 AND LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": "^20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@img/sharp-win32-x64": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.5.tgz",
++      "integrity": "sha512-x76eH0vEiHlcMQu8Y8IenntaACtddpT6W0wmXtWrnKcnKI7ME5DdgqhAD6SEWOEl1v2zDvkZDhFA9KnURwpfqg==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "Apache-2.0 AND LGPL-3.0-or-later",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      }
++    },
++    "node_modules/@next/env": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/@next/env/-/env-16.4.0.tgz",
++      "integrity": "sha512-pyLlT5oafGlX8X7xjgGNXz5dNIDSxREm+qD6i9VLSZiZFopA/XWl8NM/KPmLx/8EG/++c49iid3gNWSQW1+2dQ==",
++      "license": "MIT"
++    },
++    "node_modules/@next/swc-darwin-arm64": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.4.0.tgz",
++      "integrity": "sha512-yyZ+9MgViAKLLb5l1gPBGjRwnq3teNLb5Zx6JEw8LzNSTjlsnp+baUHFxTgl7PpjCmKf48VQfyipG1eBflb48Q==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": ">= 10"
++      }
++    },
++    "node_modules/@next/swc-darwin-x64": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-16.4.0.tgz",
++      "integrity": "sha512-RePEEejEj1Auf5s9qEcG0JbcDP3ceNUS/ofNX8AhxzgIjTVlZIHMatlp16YplcSMpsVo/ZMQHJTjbMYJznjGUg==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": ">= 10"
++      }
++    },
++    "node_modules/@next/swc-linux-arm64-gnu": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-16.4.0.tgz",
++      "integrity": "sha512-HhsyCqd+NpmvDDVY/LqkAN24f+QVvXh3ie+PfcwKinWL2Mu826JymQxJXGjAIfmJ4VlHjp4Pe/nZtXtUoEMAqw==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">= 10"
++      }
++    },
++    "node_modules/@next/swc-linux-arm64-musl": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-16.4.0.tgz",
++      "integrity": "sha512-sN9Pf+Zh+RpZAOmbR7d8KAA8T61CVhawtbEJ2Bk6QrRzx6Z/6haaF4UiwBzytM96GRRRWZh9/WALIEO3npMamA==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">= 10"
++      }
++    },
++    "node_modules/@next/swc-linux-x64-gnu": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-16.4.0.tgz",
++      "integrity": "sha512-D5M5xLWQVd1CvR+L7BickM1weRfmM41x3L1NWcnKY/oyJJqr1qwaCgmu3dMAhLBOMdZwSuDCRV6DJRRpiUkbDQ==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">= 10"
++      }
++    },
++    "node_modules/@next/swc-linux-x64-musl": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-16.4.0.tgz",
++      "integrity": "sha512-8d5WLS6a9YalqpOgXdlbvonFu+sIgjA+CO6tGzetrpPVcUL56foa7B7664h41rAlbLi5fJwK4vWji3zf4QDy+w==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">= 10"
++      }
++    },
++    "node_modules/@next/swc-win32-arm64-msvc": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-16.4.0.tgz",
++      "integrity": "sha512-sQuOIiW3snb48UwrBcDMvFA/u03qtw2LeuSIxFIQ9AJuW9UG/4Ddsfo+eV73PnZwBhyncMtsKVh7PrzMol2/fA==",
++      "cpu": [
++        "arm64"
++      ],
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">= 10"
++      }
++    },
++    "node_modules/@next/swc-win32-x64-msvc": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-16.4.0.tgz",
++      "integrity": "sha512-6/33lCuxpdHUy27RegyGM/5uTpF7YZd3UR4D0gpkOA/tWY5YR7msbQjqPgCZmSmxrrTLGCXYA4A8vT2H5DPGTQ==",
++      "cpu": [
++        "x64"
++      ],
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">= 10"
++      }
++    },
++    "node_modules/@swc/helpers": {
++      "version": "0.5.23",
++      "resolved": "https://registry.npmjs.org/@swc/helpers/-/helpers-0.5.23.tgz",
++      "integrity": "sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "tslib": "^2.8.0"
++      }
++    },
++    "node_modules/baseline-browser-mapping": {
++      "version": "2.11.28",
++      "resolved": "https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.11.28.tgz",
++      "integrity": "sha512-br0LOmjJqr6Rt4AEkadbcNf67Zpo7EPwKsWbjnRrJIa1QYFHQBqM4C7F2WTbV8ahTEcg1Eo+Y0aWjjORInYFyA==",
++      "license": "Apache-2.0",
++      "bin": {
++        "baseline-browser-mapping": "dist/cli.cjs"
++      },
++      "engines": {
++        "node": ">=6.0.0"
++      }
++    },
++    "node_modules/caniuse-lite": {
++      "version": "1.0.30001815",
++      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001815.tgz",
++      "integrity": "sha512-uDybUEyfgbyJJ93J1vikTylBX31AkdVYeVPeffMQpf8XN7hSfr0oZOn4VFOIMNvtU5+rHvC5Udg2TgtJKHm23Q==",
++      "funding": [
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/browserslist"
++        },
++        {
++          "type": "tidelift",
++          "url": "https://tidelift.com/funding/github/npm/caniuse-lite"
++        },
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/ai"
++        }
++      ],
++      "license": "CC-BY-4.0"
++    },
++    "node_modules/client-only": {
++      "version": "0.0.1",
++      "resolved": "https://registry.npmjs.org/client-only/-/client-only-0.0.1.tgz",
++      "integrity": "sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==",
++      "license": "MIT"
++    },
++    "node_modules/detect-libc": {
++      "version": "2.1.2",
++      "resolved": "https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz",
++      "integrity": "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==",
++      "license": "Apache-2.0",
++      "optional": true,
++      "engines": {
++        "node": ">=8"
++      }
++    },
++    "node_modules/nanoid": {
++      "version": "3.3.20",
++      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.20.tgz",
++      "integrity": "sha512-uKdg2G3GNCKQn9byYOpxbGqrT2fGO5KRt5J/8b3pok8rT6qxGWF6hxMyJiEYtAf+FVyYuD9hRaDqX5uPFYJ4ZQ==",
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/ai"
++        }
++      ],
++      "license": "MIT",
++      "bin": {
++        "nanoid": "bin/nanoid.cjs"
++      },
++      "engines": {
++        "node": "^10 || ^12 || ^13.7 || ^14 || >=15.0.1"
++      }
++    },
++    "node_modules/next": {
++      "version": "16.4.0",
++      "resolved": "https://registry.npmjs.org/next/-/next-16.4.0.tgz",
++      "integrity": "sha512-N2C+9q89Z/oLrsepSRS4jRMtwmUZAoZuAHU0e9T6+sAB5DdhADmrnOW+zjYijlrYFmVfmQhGVGy9eMFoB7UgKg==",
++      "license": "MIT",
++      "dependencies": {
++        "@next/env": "16.4.0",
++        "@swc/helpers": "0.5.23",
++        "baseline-browser-mapping": "^2.9.19",
++        "caniuse-lite": "^1.0.30001579",
++        "postcss": "8.5.23",
++        "styled-jsx": "5.1.6"
++      },
++      "bin": {
++        "next": "dist/bin/next"
++      },
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "optionalDependencies": {
++        "@next/swc-darwin-arm64": "16.4.0",
++        "@next/swc-darwin-x64": "16.4.0",
++        "@next/swc-linux-arm64-gnu": "16.4.0",
++        "@next/swc-linux-arm64-musl": "16.4.0",
++        "@next/swc-linux-x64-gnu": "16.4.0",
++        "@next/swc-linux-x64-musl": "16.4.0",
++        "@next/swc-win32-arm64-msvc": "16.4.0",
++        "@next/swc-win32-x64-msvc": "16.4.0",
++        "sharp": "^0.35.4"
++      },
++      "peerDependencies": {
++        "@opentelemetry/api": "^1.1.0",
++        "@playwright/test": "^1.51.1",
++        "babel-plugin-react-compiler": "*",
++        "react": "^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0",
++        "react-dom": "^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0",
++        "sass": "^1.3.0"
++      },
++      "peerDependenciesMeta": {
++        "@opentelemetry/api": {
++          "optional": true
++        },
++        "@playwright/test": {
++          "optional": true
++        },
++        "babel-plugin-react-compiler": {
++          "optional": true
++        },
++        "sass": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/picocolors": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
++      "integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==",
++      "license": "ISC"
++    },
++    "node_modules/postcss": {
++      "version": "8.5.23",
++      "resolved": "https://registry.npmjs.org/postcss/-/postcss-8.5.23.tgz",
++      "integrity": "sha512-g50586zr4bZmwFiTlflMu8E0bDTb5I5gertgwAKmsdUlTQIhZtunzUlD1WSzwcVWPoAVpsrA6vlfCD7oXvRwgg==",
++      "funding": [
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/postcss/"
++        },
++        {
++          "type": "tidelift",
++          "url": "https://tidelift.com/funding/github/npm/postcss"
++        },
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/ai"
++        }
++      ],
++      "license": "MIT",
++      "dependencies": {
++        "nanoid": "^3.3.16",
++        "picocolors": "^1.1.1",
++        "source-map-js": "^1.2.1"
++      },
++      "engines": {
++        "node": "^10 || ^12 || >=14"
++      }
++    },
++    "node_modules/react": {
++      "version": "19.3.0",
++      "resolved": "https://registry.npmjs.org/react/-/react-19.3.0.tgz",
++      "integrity": "sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=0.10.0"
++      }
++    },
++    "node_modules/react-dom": {
++      "version": "19.3.0",
++      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-19.3.0.tgz",
++      "integrity": "sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==",
++      "license": "MIT",
++      "dependencies": {
++        "scheduler": "^0.28.0"
++      },
++      "peerDependencies": {
++        "react": "^19.3.0"
++      }
++    },
++    "node_modules/scheduler": {
++      "version": "0.28.0",
++      "resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.28.0.tgz",
++      "integrity": "sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==",
++      "license": "MIT"
++    },
++    "node_modules/semver": {
++      "version": "7.8.5",
++      "resolved": "https://registry.npmjs.org/semver/-/semver-7.8.5.tgz",
++      "integrity": "sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==",
++      "license": "ISC",
++      "optional": true,
++      "bin": {
++        "semver": "bin/semver.js"
++      },
++      "engines": {
++        "node": ">=10"
++      }
++    },
++    "node_modules/sharp": {
++      "version": "0.35.5",
++      "resolved": "https://registry.npmjs.org/sharp/-/sharp-0.35.5.tgz",
++      "integrity": "sha512-Ywn4OnzGukp7CDMrp08RQ50YKmuwG47brZgIVPTvBaaAfQlRlygrRqSrxdCiL9M+LlzLBiJ68IR1QqvzHyjC7g==",
++      "license": "Apache-2.0",
++      "optional": true,
++      "dependencies": {
++        "@img/colour": "^1.1.0",
++        "detect-libc": "^2.1.2",
++        "semver": "^7.8.5"
++      },
++      "engines": {
++        "node": ">=20.9.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/libvips"
++      },
++      "optionalDependencies": {
++        "@img/sharp-darwin-arm64": "0.35.5",
++        "@img/sharp-darwin-x64": "0.35.5",
++        "@img/sharp-freebsd-wasm32": "0.35.5",
++        "@img/sharp-libvips-darwin-arm64": "1.3.4",
++        "@img/sharp-libvips-darwin-x64": "1.3.4",
++        "@img/sharp-libvips-linux-arm": "1.3.4",
++        "@img/sharp-libvips-linux-arm64": "1.3.4",
++        "@img/sharp-libvips-linux-ppc64": "1.3.4",
++        "@img/sharp-libvips-linux-riscv64": "1.3.4",
++        "@img/sharp-libvips-linux-s390x": "1.3.4",
++        "@img/sharp-libvips-linux-x64": "1.3.4",
++        "@img/sharp-libvips-linuxmusl-arm64": "1.3.4",
++        "@img/sharp-libvips-linuxmusl-x64": "1.3.4",
++        "@img/sharp-linux-arm": "0.35.5",
++        "@img/sharp-linux-arm64": "0.35.5",
++        "@img/sharp-linux-ppc64": "0.35.5",
++        "@img/sharp-linux-riscv64": "0.35.5",
++        "@img/sharp-linux-s390x": "0.35.5",
++        "@img/sharp-linux-x64": "0.35.5",
++        "@img/sharp-linuxmusl-arm64": "0.35.5",
++        "@img/sharp-linuxmusl-x64": "0.35.5",
++        "@img/sharp-webcontainers-wasm32": "0.35.5",
++        "@img/sharp-win32-arm64": "0.35.5",
++        "@img/sharp-win32-ia32": "0.35.5",
++        "@img/sharp-win32-x64": "0.35.5"
++      },
++      "peerDependenciesMeta": {
++        "@types/node": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/source-map-js": {
++      "version": "1.2.2",
++      "resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.2.tgz",
++      "integrity": "sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==",
++      "license": "BSD-3-Clause",
++      "engines": {
++        "node": ">=0.10.0"
++      }
++    },
++    "node_modules/styled-jsx": {
++      "version": "5.1.6",
++      "resolved": "https://registry.npmjs.org/styled-jsx/-/styled-jsx-5.1.6.tgz",
++      "integrity": "sha512-qSVyDTeMotdvQYoHWLNGwRFJHC+i+ZvdBRYosOFgC+Wg1vx4frN2/RG/NA7SYqqvKNLf39P2LSRA2pu6n0XYZA==",
++      "license": "MIT",
++      "dependencies": {
++        "client-only": "0.0.1"
++      },
++      "engines": {
++        "node": ">= 12.0.0"
++      },
++      "peerDependencies": {
++        "react": ">= 16.8.0 || 17.x.x || ^18.0.0-0 || ^19.0.0-0"
++      },
++      "peerDependenciesMeta": {
++        "@babel/core": {
++          "optional": true
++        },
++        "babel-plugin-macros": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/tslib": {
++      "version": "2.8.1",
++      "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
++      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==",
++      "license": "0BSD"
++    }
++  }
++}
+diff --git a/package.json b/package.json
+new file mode 100644
+index 0000000..60b3fb2
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,19 @@
++{
++  "name": "farah-nicole",
++  "private": true,
++  "version": "1.0.0",
++  "description": "Farah Nicole — personal site. Next.js build of the Homepage design.",
++  "scripts": {
++    "dev": "next dev",
++    "build": "next build",
++    "start": "next start"
++  },
++  "dependencies": {
++    "next": "16.4.0",
++    "react": "19.3.0",
++    "react-dom": "19.3.0"
++  },
++  "engines": {
++    "node": ">=20"
++  }
++}
+diff --git a/public/assets/0502d8d883763c5d94eb706e40e06709.jpg b/public/assets/0502d8d883763c5d94eb706e40e06709.jpg
+new file mode 100644
+index 0000000..e6a110a
+Binary files /dev/null and b/public/assets/0502d8d883763c5d94eb706e40e06709.jpg differ
+diff --git a/public/assets/10ca37666943f29e166adb598b610bf7.jpg b/public/assets/10ca37666943f29e166adb598b610bf7.jpg
+new file mode 100644
+index 0000000..6d63258
+Binary files /dev/null and b/public/assets/10ca37666943f29e166adb598b610bf7.jpg differ
+diff --git a/public/assets/110d3d196aaf7fb49a8240a61b7ecdab.jpg b/public/assets/110d3d196aaf7fb49a8240a61b7ecdab.jpg
+new file mode 100644
+index 0000000..feeed3f
+Binary files /dev/null and b/public/assets/110d3d196aaf7fb49a8240a61b7ecdab.jpg differ
+diff --git a/public/assets/32ec3630f4a85da50f186a19bb66dc00.jpg b/public/assets/32ec3630f4a85da50f186a19bb66dc00.jpg
+new file mode 100644
+index 0000000..0f6bdf7
+Binary files /dev/null and b/public/assets/32ec3630f4a85da50f186a19bb66dc00.jpg differ
+diff --git a/public/assets/3302ce1f0cf557e6bafee3137d47db98.jpg b/public/assets/3302ce1f0cf557e6bafee3137d47db98.jpg
+new file mode 100644
+index 0000000..4d86a9b
+Binary files /dev/null and b/public/assets/3302ce1f0cf557e6bafee3137d47db98.jpg differ
+diff --git a/public/assets/83f959416ea63f46848636f85d30f878.jpg b/public/assets/83f959416ea63f46848636f85d30f878.jpg
+new file mode 100644
+index 0000000..437a26a
+Binary files /dev/null and b/public/assets/83f959416ea63f46848636f85d30f878.jpg differ
+diff --git a/public/assets/93acc881efcabbbdc76b486f32e43fdf.jpg b/public/assets/93acc881efcabbbdc76b486f32e43fdf.jpg
+new file mode 100644
+index 0000000..3583246
+Binary files /dev/null and b/public/assets/93acc881efcabbbdc76b486f32e43fdf.jpg differ
+diff --git a/public/assets/a2610440e9cf5a7acdab1dcd39be12db.jpg b/public/assets/a2610440e9cf5a7acdab1dcd39be12db.jpg
+new file mode 100644
+index 0000000..68c402a
+Binary files /dev/null and b/public/assets/a2610440e9cf5a7acdab1dcd39be12db.jpg differ
+diff --git a/public/assets/a8f6a24383fc9c2204d8c268ea1c1933.jpg b/public/assets/a8f6a24383fc9c2204d8c268ea1c1933.jpg
+new file mode 100644
+index 0000000..b0c0359
+Binary files /dev/null and b/public/assets/a8f6a24383fc9c2204d8c268ea1c1933.jpg differ
+diff --git a/public/assets/b34c0d711ad905a1a527cf7bf8ae47a4.jpg b/public/assets/b34c0d711ad905a1a527cf7bf8ae47a4.jpg
+new file mode 100644
+index 0000000..821a425
+Binary files /dev/null and b/public/assets/b34c0d711ad905a1a527cf7bf8ae47a4.jpg differ
+diff --git a/public/assets/c5448cd4aed04f6d79793e975fb2a867.jpg b/public/assets/c5448cd4aed04f6d79793e975fb2a867.jpg
+new file mode 100644
+index 0000000..fd42c41
+Binary files /dev/null and b/public/assets/c5448cd4aed04f6d79793e975fb2a867.jpg differ
+diff --git a/public/assets/c8ee6ba8c96cf2c42222de1af94360cb.jpg b/public/assets/c8ee6ba8c96cf2c42222de1af94360cb.jpg
+new file mode 100644
+index 0000000..b3dd641
+Binary files /dev/null and b/public/assets/c8ee6ba8c96cf2c42222de1af94360cb.jpg differ
+diff --git a/public/assets/d53b3fd3794bfed20bf3684a430b3d25.jpg b/public/assets/d53b3fd3794bfed20bf3684a430b3d25.jpg
+new file mode 100644
+index 0000000..1408238
+Binary files /dev/null and b/public/assets/d53b3fd3794bfed20bf3684a430b3d25.jpg differ
+diff --git a/public/assets/ec79a1aa63b895985e89dfc7dfde4561.jpg b/public/assets/ec79a1aa63b895985e89dfc7dfde4561.jpg
+new file mode 100644
+index 0000000..1efb8dc
+Binary files /dev/null and b/public/assets/ec79a1aa63b895985e89dfc7dfde4561.jpg differ
+diff --git a/public/assets/f242224529b21d0cf23e6fb98c975a66.jpg b/public/assets/f242224529b21d0cf23e6fb98c975a66.jpg
+new file mode 100644
+index 0000000..87e05f7
+Binary files /dev/null and b/public/assets/f242224529b21d0cf23e6fb98c975a66.jpg differ
