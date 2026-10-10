@@ -1,0 +1,19 @@
+{
+  "name": "farah-nicole",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Farah Nicole — personal site. Next.js build of the Homepage design.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
