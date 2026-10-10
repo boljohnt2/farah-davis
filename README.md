@@ -20,8 +20,19 @@ npm run build && npm start
 ## Deploy on Vercel
 
 The repo is a standard Next.js app at the root, so Vercel detects it with zero
-configuration. Push and import the repo; `npm run build` is the build command
-and `next start` is not needed on Vercel.
+configuration. The production branch is `main`; Vercel builds it automatically
+on every push. `npm run build` is the build command.
+
+Two project settings to check in the Vercel dashboard:
+
+1. **Deployment Protection** (Settings → Deployment Protection). If Vercel
+   Authentication is on, every visitor hits a "Protected Deployment" login
+   wall. For a public site, set it to Disabled (or "Only protect preview
+   deployments").
+2. **Domains** (Settings → Domains). Use the exact domain Vercel lists there.
+   The bare `farah-davis.vercel.app` name is not attached to this project; the
+   team-scoped domain works. Add a custom domain (e.g. farahnicole.com) here
+   when ready.
 
 Optional environment variables (all have sensible defaults baked in):
 
