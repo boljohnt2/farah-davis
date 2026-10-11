@@ -1,24 +1,62 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cookingClips } from '../lib/site';
 
-// Builds a YouTube embed URL that starts at `start` and stops at `end` (seconds).
+// Muted, looping, autoplaying embed of one highlight between start and end.
+// `playlist` set to the same video id is what makes YouTube loop a segment.
 function youtubeSrc({ youtubeId, start, end }) {
   const params = new URLSearchParams({
     autoplay: '1',
+    mute: '1',
+    loop: '1',
+    playlist: youtubeId,
     playsinline: '1',
     rel: '0',
     modestbranding: '1',
+    start: String(start),
+    end: String(end),
   });
-  if (start) params.set('start', String(start));
-  if (end) params.set('end', String(end));
   return `https://www.youtube-nocookie.com/embed/${youtubeId}?${params}`;
+}
+
+// A reel loads its player once it is near the visible part of the track.
+function Reel({ clip, label }) {
+  const ref = useRef(null);
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || active) return undefined;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setActive(true);
+          io.disconnect();
+        }
+      },
+      { root: el.closest('.track'), rootMargin: '0px 300px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [active]);
+
+  return (
+    <article className="reel" ref={ref}>
+      {active ? (
+        <iframe
+          src={youtubeSrc(clip)}
+          title={label}
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowFullScreen
+        />
+      ) : null}
+    </article>
+  );
 }
 
 export default function Kitchen() {
   const trackRef = useRef(null);
-  const [playing, setPlaying] = useState(null);
 
   const slide = (dir) => () => {
     const track = trackRef.current;
@@ -27,20 +65,10 @@ export default function Kitchen() {
       typeof window !== 'undefined' &&
       window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    track.scrollBy({ left: dir * 308, behavior: reduce ? 'auto' : 'smooth' });
+    const card = track.querySelector('.reel');
+    const step = card ? card.offsetWidth + 28 : 308;
+    track.scrollBy({ left: dir * step, behavior: reduce ? 'auto' : 'smooth' });
   };
-
-  const reels = cookingClips.map((c, i) => {
-    const playable = Boolean(c.youtubeId || c.video);
-    return {
-      ...c,
-      label: 'Play cooking clip ' + (i + 1),
-      isPlaying: playing === c.id && playable,
-      play: () => {
-        if (playable) setPlaying(c.id);
-      },
-    };
-  });
 
   return (
     <section
@@ -83,37 +111,12 @@ export default function Kitchen() {
         aria-label="Cooking clips, scroll sideways"
         ref={trackRef}
       >
-        {reels.map((reel) => (
-          <article className="reel" key={reel.id}>
-            {reel.isPlaying && reel.youtubeId ? (
-              <iframe
-                src={youtubeSrc(reel)}
-                title={reel.alt}
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-              />
-            ) : reel.isPlaying ? (
-              <video
-                src={reel.video}
-                poster={reel.poster}
-                autoPlay
-                controls
-                playsInline
-              />
-            ) : (
-              <>
-                <img src={reel.poster} alt={reel.alt} />
-                <button
-                  className="rplay"
-                  type="button"
-                  aria-label={reel.label}
-                  onClick={reel.play}
-                >
-                  <span className="tri" />
-                </button>
-              </>
-            )}
-          </article>
+        {cookingClips.map((clip, i) => (
+          <Reel
+            key={clip.id}
+            clip={clip}
+            label={'Cooking highlight ' + (i + 1)}
+          />
         ))}
       </div>
     </section>
