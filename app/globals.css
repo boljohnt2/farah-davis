@@ -243,3 +243,20 @@ body { margin: 0; background: #fff9f4; }
 .wordmark { font-size: clamp(90px, 21vw, 330px); line-height: 0.8; color: var(--royal); white-space: nowrap; margin-top: 8px; margin-left: -0.02em; user-select: none; }
 @media (max-width: 960px) { .foot { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .wrap { padding-inline: 20px; } .foot { grid-template-columns: minmax(0, 1fr); } }
+
+/* Business plan draft (/business-plan) */
+.plan { background: var(--warm); color: var(--ink); min-height: 100vh; padding: 64px 20px 96px; }
+.plan-wrap { max-width: 860px; margin: 0 auto; }
+.plan-draft { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cobalt); font-weight: 600; margin-bottom: 24px; }
+.plan-title { font-size: clamp(40px, 6vw, 64px); line-height: 1; color: var(--cobalt); }
+.plan-sub { font-size: 22px; margin-top: 12px; }
+.plan-note { font-size: 15px; color: var(--cobalt); margin-top: 6px; margin-bottom: 40px; }
+.plan-sec { border-top: 2px solid var(--ink); padding-block: 24px 28px; }
+.plan-sec h2 { font-family: var(--font-bodoni), 'Bodoni Moda', Georgia, serif; font-style: italic; font-weight: 800; font-size: 28px; margin-bottom: 12px; }
+.plan-sec p, .plan-sec li { font-size: 17px; line-height: 1.6; margin-bottom: 8px; }
+.plan-sec ul { padding-left: 20px; }
+.plan-sec li { list-style: disc; }
+.plan-table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.plan-table th, .plan-table td { text-align: left; padding: 12px 10px; border-bottom: 1px solid rgba(11, 16, 48, 0.2); vertical-align: top; }
+.plan-table th { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cobalt); }
+@media (max-width: 560px) { .plan-table thead { display: none; } .plan-table td { display: block; border: 0; padding: 4px 0; } .plan-table tr { display: block; border-bottom: 1px solid rgba(11, 16, 48, 0.2); padding-block: 12px; } }
