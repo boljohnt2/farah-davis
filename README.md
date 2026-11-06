@@ -42,6 +42,8 @@ Optional environment variables (all have sensible defaults baked in):
 | `NEXT_PUBLIC_BOOKING_URL` | Target of every "Book my free 15 min" CTA | `https://www.pivotandpoppr.com/let-s-pop` |
 | `NEXT_PUBLIC_INTRO_VIDEO_URL` | Hero intro video (mp4/webm in `public/` or any URL) | empty |
 | `NEXT_PUBLIC_INTRO_VIDEO_RATIO` | Hero video frame on mobile: `4 / 5`, `16 / 9`, `9 / 16` | `4 / 5` |
+| `NEXT_PUBLIC_NEWSLETTER_ACTION` | Form URL from the email provider (Mailchimp, Kit, etc.). The signup section stays hidden until this is set | empty |
+| `NEXT_PUBLIC_NEWSLETTER_FIELD` | Name of the email input the provider expects (e.g. `EMAIL` for Mailchimp) | `email` |
 
 ## Swapping in real media
 

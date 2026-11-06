@@ -4,6 +4,7 @@ import Coaching from '../components/Coaching';
 import About from '../components/About';
 import Quote from '../components/Quote';
 import Proof from '../components/Proof';
+import Signup from '../components/Signup';
 import BookCta from '../components/BookCta';
 import More from '../components/More';
 import Kitchen from '../components/Kitchen';
@@ -25,6 +26,7 @@ export default function Home() {
       <About />
       <Quote />
       <Proof />
+      <Signup />
       <BookCta />
       <More />
       <Kitchen />
